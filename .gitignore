@@ -1,3 +1,15 @@
+# Données volumineuses
+data/*.pkl
+data/*.zip
+data/*.csv
+data/text_files/
+data/df_complet.pkl
+data/df_explore.pkl
+
+# Jupyter
+.ipynb_checkpoints/
+__pycache__/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
