@@ -8,7 +8,7 @@
 
 ## Summary
 
-This project applies Natural Language Processing techniques to the **Archelec corpus**, a collection of over 12,000 electoral manifestos (*professions de foi*) from French legislative elections in 1981, 1988, and 1993. Using topic modeling (LDA, NMF), zero-shot classification (BERT), and dimensionality reduction (t-SNE), we analyze how political discourse evolved across three pivotal elections of the French Fifth Republic — from Mitterrand's rise to power, through the cohabitation era, to the return of the right.
+This project applies Natural Language Processing techniques to the **Archelec corpus**, a collection of over 12,000 electoral manifestos (*professions de foi*) from French legislative elections in 1981, 1988, and 1993. Using topic modeling (LDA, NMF), zero-shot classification (BERT), and dimensionality reduction (t-SNE), we analyze how political discourse evolved across three pivotal elections of the French Fifth Republic, from Mitterrand's rise to power, through the cohabitation era, to the return of the right.
 
 The central question is: **do candidates' thematic priorities reflect their party affiliation, their socio-professional background, or the economic reality of their constituency?**
 
@@ -35,25 +35,25 @@ After joining transcriptions with metadata, the working dataset contains 12,746 
 The project follows a multi-stage pipeline:
 
 **1. Data collection and preprocessing** (`01_data_loading.ipynb`)
-— CSV parsing, ZIP extraction, text-metadata join, and initial DataFrame construction.
+- CSV parsing, ZIP extraction, text-metadata join, and initial DataFrame construction.
 
 **2. Exploratory data analysis** (`02_exploration.ipynb`)
-— Descriptive statistics, party distribution, gender analysis, profession classification using a BERT-based zero-shot classifier (`joeddav/xlm-roberta-large-xnli`) to map 2,000+ raw professions into ~15 PCS categories (inspired by INSEE's socio-professional classification).
+- Descriptive statistics, party distribution, gender analysis, profession classification using a BERT-based zero-shot classifier (`joeddav/xlm-roberta-large-xnli`) to map 2,000+ raw professions into ~15 PCS categories (inspired by INSEE's socio-professional classification).
 
 **3. Topic modeling** (`03_topic_modelling.ipynb`)
-— Two rounds of modeling:
+- Two rounds of modeling:
   - *Round 1*: Standard LDA on the full vocabulary → captures partisan identities rather than themes.
   - *Round 2*: Improved LDA and NMF after removing partisan vocabulary (party names, slogans, electoral jargon) → extracts genuine policy themes (economy, immigration, environment, social policy, etc.).
   - Comparison of LDA vs. NMF, optimal topic count selection via perplexity analysis, and t-SNE projections of the thematic space.
 
 **4. Cross-analysis** (`04_party_analysis.ipynb`)
-— Thematic propensity by party, partisan specialization (deviation from national average), and correlation between topics and socio-demographic metadata (profession, age, gender).
+- Thematic propensity by party, partisan specialization (deviation from national average), and correlation between topics and socio-demographic metadata (profession, age, gender).
 
 **5. Temporal evolution** (`05_temporal_analysis.ipynb`)
-— Tracking how themes rise and fall across the three elections, and whether parties converge or diverge thematically over time.
+- Tracking how themes rise and fall across the three elections, and whether parties converge or diverge thematically over time.
 
 **6. Discourse vs. economic reality** (`06_economic_reality.ipynb`)
-— Comparing topic frequencies at the department level with real INSEE economic indicators (unemployment, rurality) to test whether local discourse reflects local conditions.
+- Comparing topic frequencies at the department level with real INSEE economic indicators (unemployment, rurality) to test whether local discourse reflects local conditions.
 
 ## Repository Structure
 
@@ -66,9 +66,7 @@ ensae-nlp-archelec/
 │   ├── 01_data_loading.ipynb
 │   ├── 02_exploration.ipynb
 │   ├── 03_topic_modelling.ipynb
-│   ├── 04_party_analysis.ipynb
-│   ├── 05_temporal_analysis.ipynb
-│   └── 06_economic_reality.ipynb
+│   
 ├── data/
 │   └── README.md              # Instructions to download the data
 ├── report/
@@ -108,4 +106,4 @@ Placeholder for results such as:
 
 ## License
 
-This project is for educational purposes (ENSAE Paris, ML for NLP course, 2025–2026).
+ENSAE Paris, ML for NLP course, 2025–2026.
