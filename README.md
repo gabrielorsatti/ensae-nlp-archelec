@@ -46,14 +46,8 @@ The project follows a multi-stage pipeline:
   - *Round 2*: Improved LDA and NMF after removing partisan vocabulary (party names, slogans, electoral jargon) → extracts genuine policy themes (economy, immigration, environment, social policy, etc.).
   - Comparison of LDA vs. NMF, optimal topic count selection via perplexity analysis, and t-SNE projections of the thematic space.
 
-**4. Cross-analysis** (`04_party_analysis.ipynb`)
-- Thematic propensity by party, partisan specialization (deviation from national average), and correlation between topics and socio-demographic metadata (profession, age, gender).
+....
 
-**5. Temporal evolution** (`05_temporal_analysis.ipynb`)
-- Tracking how themes rise and fall across the three elections, and whether parties converge or diverge thematically over time.
-
-**6. Discourse vs. economic reality** (`06_economic_reality.ipynb`)
-- Comparing topic frequencies at the department level with real INSEE economic indicators (unemployment, rurality) to test whether local discourse reflects local conditions.
 
 ## Repository Structure
 
