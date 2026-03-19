@@ -63,11 +63,7 @@ ensae-nlp-archelec/
 │   
 ├── data/
 │   └── README.md              # Instructions to download the data
-├── report/
-│   └── rapport.pdf            # Final report (NeurIPS format)
-└── src/
-    └── utils.py               # Shared utility functions
-```
+
 
 > **Note**: Data files (`.pkl`, `.zip`, `.csv`) are excluded from the repository due to size constraints. See `data/README.md` for download instructions.
 
@@ -88,7 +84,7 @@ Placeholder for results such as:
 1. Clone this repository
 2. Download the data files (see `data/README.md`)
 3. Install dependencies: `pip install -r requirements.txt`
-4. Run the notebooks in order (01 → 06)
+4. Run the notebooks in order (01 → ?)
 
 ## References
 
