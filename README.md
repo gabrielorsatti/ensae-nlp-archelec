@@ -1,4 +1,4 @@
-# Thematic Evolution of French Electoral Manifestos (1973–1993)
+# Thematic Evolution of French Electoral Manifestos (1973-1993)
 
 **ENSAE Paris - Machine Learning for NLP (2025–2026)**
 
@@ -123,7 +123,7 @@ The BERT classification step in `02_exploration.ipynb` runs once and caches resu
 
 - Gaultier-Voituriez, O. *Archelec, les archives électorales françaises de la Ve République, du papier au numérique : reflet fidèle ou distorsion ?*
 - [Fonds Archives électorales - Sciences Po](https://archelec.sciencespo.fr/)
-- [Arkindex platform — Teklia](https://demo.arkindex.org/)
+- [Arkindex platform - Teklia](https://demo.arkindex.org/)
 - Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. *JMLR*.
 - Devlin, J., et al. (2019). BERT: Pre-training of Deep Bidirectional Transformers. *NAACL*.
 - Monroe, B. L., Colaresi, M. P., & Quinn, K. M. (2008). Fightin' words: Lexical feature selection and evaluation for identifying the content of political conflict. *Political Analysis*.
@@ -131,4 +131,4 @@ The BERT classification step in `02_exploration.ipynb` runs once and caches resu
 
 ---
 
-*ENSAE Paris, ML for NLP course, 2025–2026.*
+*ENSAE Paris, ML for NLP course, 2025-2026.*
