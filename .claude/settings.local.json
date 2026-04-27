@@ -8,7 +8,12 @@
       "Bash(python -c ' *)",
       "Bash(python fix_emdashes.py)",
       "Bash(python add_docs_nb03.py)",
-      "Bash(git ls-files *)"
+      "Bash(git ls-files *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
