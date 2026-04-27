@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Bash(venv/Scripts/pip show:*)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(venv/Scripts/python -c \"import gensim; from gensim.models import CoherenceModel; from gensim.corpora import Dictionary; print\\(''gensim OK:'', gensim.__version__\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python fix_emdashes.py)",
+      "Bash(python add_docs_nb03.py)",
+      "Bash(git ls-files *)"
+    ]
+  }
+}
