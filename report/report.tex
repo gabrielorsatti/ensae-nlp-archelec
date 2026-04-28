@@ -18,7 +18,7 @@
 \usepackage{float}
 \usepackage{caption}
 
-\title{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973--1993}
+\title{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973-1993}
 
 \author{
   Gabriel Orsatti\thanks{Course: Machine Learning for Natural Language Processing.} \\
@@ -122,7 +122,7 @@ When evaluating the optimal number of topics via $C_v$ coherence (Figure~\ref{fi
 \label{fig:topics}
 \end{figure}
 
-The resulting 11 topics (Figure~\ref{fig:topics}) reveal a surprisingly rich thematic landscape, naturally clustering into three distinct blocks. The \textbf{labour and class-struggle block} (Topics 0, 5, 9) spans everything from employer-employee power dynamics to the highly militant, Marxist vocabulary of the 1970s. The \institutional block (Topics 1, 3, 4) captures the meta-discourse of governance, separating the left-wing alliance rhetoric from the right-wing majority language. Finally, the issue-specific topics isolate distinct policy areas: immigration (Topic 8), social protection (Topic 6), and a fascinating trio of ecology topics (2, 7, 10) that track the movement's evolution from radical anti-nuclear activism to institutionalised Green politics.
+The temporal evolution of topic shares perfectly captures the shifting ideological landscape and the most striking structural change is the sudden explosion of Topic 8 (immigration and national identity) in 1988, which directly tracks the electoral breakthrough of the Front National. Concurrently, the steady institutionalisation of environmental politics is reflected in the gradual expansion of Topic 7 (ecology) in the later elections. Conversely, traditional labor and class-struggle narratives (Topics 0 and 5), which commanded a dominant share during the highly polarized elections of the 1970s, slowly recede over time. Ultimately, this visualizes a clear transition from a political arena dominated by economic class conflict to one increasingly fragmented by new cultural and ecological cleavages.
 
 \subsection{Temporal dynamics}
 
@@ -212,7 +212,7 @@ Let us look specifically at documents highly loaded on the ``Employment'' topic 
 \label{fig:macro}
 \end{figure}
 
-A recurring debate in political science is whether campaign discourse is purely strategic or responsive to actual events. Figure~\ref{fig:macro} overlays objective INSEE macroeconomic data with the frequency of economic terms in our corpus. The correlation is striking. Economic vocabulary dominates in 1978 and 1981, perfectly mirroring the severe stagflation crisis (where inflation peaked at 13.4\%). As inflation recedes by 1988, so does the economic rhetoric. It rebounds in 1993, but this time pivoting to address the soaring unemployment rate (11.6\%). This strongly suggests that politicians, regardless of their family, are forced to tether their rhetoric to the material conditions experienced by the voters.
+A recurring debate in political science is whether campaign discourse is purely strategic or responsive to actual events. Figure~\ref{fig:macro} overlays objective INSEE macroeconomic data with the frequency of economic terms in our corpus but the correlation appears weak. Economic vocabulary dominates in 1978 and 1981, perfectly mirroring the severe stagflation crisis (where inflation peaked at 13.4\%). As inflation recedes by 1988, so does the economic rhetoric. It rebounds in 1993, but this time pivoting to address the soaring unemployment rate (11.6\%). This strongly suggests that politicians, regardless of their family, are forced to tether their rhetoric to the material conditions experienced by the voters.
 
 \section{Semantic geometry}
 
@@ -229,23 +229,23 @@ As a final visual synthesis, the t-SNE projection (Figure~\ref{fig:tsne}) maps t
 
 Three major findings emerge from this study. First, the synergy between unsupervised and supervised methods is paramount. Topic modeling alone would have led us to believe that all parties are essentially similar, as they share the same overarching themes. It is only through classification and lexical log-odds analysis that we uncover the true mechanism of differentiation: vocabulary. 
 
-Second, the classifier's performance confirms a core tenet of political science regarding niche versus catch-all parties \citep{meguid2005competition}. Niche parties (Greens, Far-Right) cultivate highly distinctive, insular discursive identities to survive, making them mathematically easy to identify. Mainstream parties deliberately blur their ideological contours to appeal to the median voter, confusing both human readers and our logistic regression.
+Second, the classifier's performance confirms a core tenet of political science regarding niche versus catch-all parties \citep{meguid2005competition}. Niche parties (Greens, Far-Right) cultivate highly distinctive, insular discursive identities to survive, making them mathematically easy to identify. "Mainstream parties deliberately blur their ideological contours to appeal to the median voter, confusing both human readers and our logistic regression.
 
 Third, the ability of raw, noisy OCR text to cleanly map onto external historical and macroeconomic events validates the robustness of NLP in the social sciences. The rise of immigration discourse or the shifting focus from inflation to unemployment are not artifacts of the algorithm; they are the digital echoes of French history.
 
-\textbf{Limitations.} The study is not without flaws. OCR quality is highly variable, heavily penalizing older documents from the 1970s. Additionally, our LDA model relies on hard assignments ($\arg\max$), which discards the softer, nuanced probabilities of document membership. Finally, the correlation between discourse and macroeconomic reality remains an "ecological correlation" \citep{robinson1950ecological}, requiring deeper causal inference methods to truly validate.
+\textbf{Limitations.} The study is not without flaws. OCR quality is highly variable, heavily penalizing older documents from the 1970s. Additionally, our LDA model relies on hard assignments ($\arg\max$), which discards the softer, nuanced probabilities of document membership. Finally, the correlation between discourse and macroeconomic reality is not causation and remains quite weak, requiring deeper causal inference methods to truly validate.
 
 \section{Conclusion}
 
 This paper set out to map the ideological structure of the French party system between 1973 and 1993 using 21,697 legislative manifestos. The primary insight is unequivocal: political differentiation operates at the vocabulary level, not the topic level. Candidates from across the spectrum are forced by the electoral agenda to discuss the exact same issues, but they frame these realities through ideologically irreconcilable languages. 
 
-While classical NLP methods (LDA, TF-IDF, logistic regression) might seem quaint in the age of large language models, their inherent interpretability allows us to do more than just achieve high accuracy. They allow us to read the coefficients, inspect the distributions, and truly understand \textit{why} a document belongs where it does. A logical next step would be integrating fine-tuned models like CamemBERT to capture shifting semantic contexts, but even without them, the bag-of-words approach has proven remarkably capable of reverse-engineering political history.
+While classical NLP methods (LDA, TF-IDF, logistic regression) might seem quaint in the age of large language models, their inherent interpretability allows us to do more than just achieve high accuracy. They allow us to read the coefficients, inspect the distributions, and truly understand why a document belongs where it does. A logical next step would be integrating fine-tuned models like CamemBERT to capture shifting semantic contexts, but even without them, the bag-of-words approach has proven remarkably capable of reverse-engineering political history.
 
 \medskip
 
 {
 \small
-
+\clearpage
 \bibliographystyle{plainnat}
 \begin{thebibliography}{99}
 
