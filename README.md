@@ -91,7 +91,7 @@ ensae-nlp-archelec/
     └── README.md              
 
 > **Note**: Data files (`.pkl`, `.zip`, `.csv`) are excluded from the repository due to size constraints. See `data/README.md` for download instructions.
-
+```
 ---
 
 ## How to reproduce
