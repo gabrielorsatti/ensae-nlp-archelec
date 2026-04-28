@@ -1,491 +1,331 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass{article}
 
-% ---- NeurIPS-inspired layout ----
-\usepackage[margin=1in]{geometry}
+\usepackage[preprint]{neurips_2026}
+
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{times}
-\usepackage{amsmath,amssymb}
-\usepackage{graphicx}
-\usepackage{booktabs}
 \usepackage{hyperref}
-\usepackage{natbib}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{float}
-\usepackage{enumitem}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{xcolor}
-\usepackage{titlesec}
-\usepackage{abstract}
+\usepackage{graphicx}
+\usepackage{float}
 
-\hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=blue!60!black, urlcolor=blue!60!black}
-
-\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
-\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
-
-\renewcommand{\abstractnamefont}{\normalfont\bfseries}
-\renewcommand{\abstracttextfont}{\normalfont\small}
-
-\setlength{\parskip}{0.4em}
-\setlength{\parindent}{0em}
-
-\title{\textbf{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973--1993}}
+\title{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973--1993}
 
 \author{
-  Gabriel Orsatti\\
+  Gabriel Orsatti\thanks{Course: Machine Learning for Natural Language Processing.} \\
   ENSAE Paris -- Institut Polytechnique de Paris\\
   M2 Data Science, 2025--2026\\
-  \texttt{gabriel.orsatti@ensae.fr}\\
-  \\
-  \textit{Course: Machine Learning for Natural Language Processing}
+  \texttt{gabriel.orsatti@ensae.fr}
 }
 
-\date{April 2026}
-
 \begin{document}
+
 \maketitle
 
-% ====================================================================
 \begin{abstract}
-This paper applies natural language processing techniques to a corpus of 21,697 French legislative electoral manifestos (\textit{professions de foi}) spanning five elections from 1973 to 1993. We combine unsupervised topic modeling (LDA, NMF) with supervised text classification (logistic regression on TF-IDF features) and corpus-level rhetorical analysis (log-odds ratio) to investigate two questions: what latent thematic structure organises political discourse across the French party system, and whether the specific vocabulary that candidates use to address shared policy themes differs systematically by political family. Our LDA model with $k{=}11$ topics reveals a well-balanced thematic landscape covering economic conflict, social protection, ecology, immigration, and institutional values. A logistic regression classifier trained on TF-IDF features predicts political family membership with strong performance, confirming that ideological identity leaves detectable lexical traces even in short, formulaic campaign documents. The log-odds ratio analysis (Monroe et al., 2008) demonstrates that families frame identical policy domains through strikingly different vocabularies: the radical left speaks of \textit{travailleurs} and \textit{lutte} where the far right invokes \textit{immigration} and \textit{insécurité}. We also find that the frequency of economic vocabulary in manifestos tracks national macroeconomic indicators, suggesting that campaign rhetoric is at least partly responsive to material conditions rather than being purely strategic.
+This paper applies natural language processing to 21,697 French electoral manifestos (\textit{professions de foi}) from five legislative elections between 1973 and 1993. We combine LDA topic modeling, logistic regression on TF-IDF, and log-odds rhetorical analysis to ask two questions: what thematic structure organises political discourse, and how do political families frame shared policy themes differently? An 11-topic LDA model produces a balanced thematic decomposition covering class struggle, ecology, immigration, social protection, and governance. A logistic regression classifier predicts political family from text alone with strong accuracy, and the log-odds analysis reveals that families discussing the same topic---say, unemployment---use strikingly different vocabularies. We also compare discourse to INSEE macroeconomic data and find that campaign rhetoric partly tracks material conditions. The main insight: ideological differentiation operates at the vocabulary level, not the topic level. All families discuss the same broad themes; they just talk about them differently.
 \end{abstract}
 
-% ====================================================================
 \section{Introduction}
-\label{sec:intro}
 
-Electoral manifestos are peculiar documents. They are short --- rarely more than two printed pages --- mass-distributed, and read by few. Yet they constitute one of the few standardised records of what parties choose to say, in writing, to voters at a specific moment in time. In France, the \textit{profession de foi} occupies a distinctive position in the electoral apparatus: it is printed at public expense and mailed to every registered voter before each round of voting, a practice dating back to the Third Republic. The document is therefore simultaneously official and partisan, constrained in format but free in content.
+In France, the \textit{profession de foi} is a short electoral manifesto printed at public expense and mailed to every registered voter before each round of legislative voting. The document is simultaneously official and partisan, constrained in format but free in content---one of the few standardised records of what parties choose to say to voters at a given moment.
 
-The Archelec corpus, digitised and archived by Sciences Po Paris and the CEVIPOF, gathers these manifestos for French elections from 1958 to 1993. The OCR transcriptions were produced by the Teklia laboratory through the Arkindex platform. For this study, we focus on five legislative elections: 1973, 1978, 1981, 1988, and 1993. Together they span twenty years of profound transformation in French political life --- the end of the Gaullist era, the alternance of 1981 that brought the left to power for the first time under the Fifth Republic, the cohabitation experiments, the rise of the Front National, and the emergence of political ecology as an organised force.
+The Archelec corpus, digitised by Sciences Po Paris and the CEVIPOF, gathers these manifestos from 1958 to 1993, with OCR transcriptions by the Teklia laboratory. We focus on five legislative elections---1973, 1978, 1981, 1988, and 1993---spanning the end of the Gaullist era, the \textit{alternance} of 1981, the rise of the Front National, and the emergence of political ecology. Our question: can we recover the ideological structure of the French party system from text alone?
 
-The central question of this paper is simple but, we think, interesting: can we recover the ideological structure of the French party system from the text alone, without reading a single manifesto ourselves? And if we can, what does the structure look like --- is it just a left--right axis, or something richer?
+We proceed in three stages. First, unsupervised topic models identify latent themes (Section~\ref{sec:topics}). Second, supervised classification tests whether text predicts political family (Section~\ref{sec:classification}). Third, log-odds ratios and macroeconomic data reveal how families frame shared themes differently (Section~\ref{sec:framing}).
 
-We approach this in three stages. First, we use unsupervised topic models to identify the latent themes that organise the corpus (Section~\ref{sec:topics}). Then we deploy supervised classification to test whether text features alone suffice to predict a document's political family (Section~\ref{sec:classification}). Finally, we examine how parties frame shared themes differently, using log-odds ratios, and whether political discourse responds to macroeconomic reality (Section~\ref{sec:framing}).
+\section{Related work}
 
-The contribution is primarily empirical. We show that classical NLP methods --- bag-of-words representations, LDA, logistic regression --- remain effective tools for the analysis of political text, even when that text is noisy (OCR errors), short (a few hundred tokens), and formulaic (electoral manifestos share a common rhetorical grammar). We also demonstrate that the combination of unsupervised and supervised methods, applied to the same corpus, produces a richer picture than either alone.
+The Comparative Manifesto Project \citep{budge2001mapping} pioneered cross-national manifesto coding, but manual annotation is expensive. Automated methods \citep{grimmer2013text} transformed the field: bag-of-words and TF-IDF proved effective because political vocabulary is highly repetitive. LDA \citep{blei2003latent} became the dominant unsupervised method, applied to U.S. Senate speeches \citep{quinn2010analyze} and extended with metadata \citep{roberts2014structural}. For French political corpora, lexicometric approaches \citep{bonnafous2003analyse} exist but not at the scale of the full Archelec collection.
 
+The ``fighting words'' framework \citep{monroe2008fightin} identifies vocabulary disproportionately favoured by one group, controlling for verbosity via an informative Dirichlet prior. NMF \citep{lee1999learning} and BERTopic \citep{grootendorst2022bertopic} offer alternatives to LDA; we experiment with all three. On the supervised side, logistic regression on TF-IDF remains a strong interpretable baseline \citep{joachims1998text}.
 
-% ====================================================================
-\section{Related Work}
-\label{sec:related}
-
-Quantitative analysis of political text has a long history. Early work in political science used manual content analysis --- human coders reading documents and assigning categories --- to study party platforms and legislative speeches \citep{budge2001mapping}. The Comparative Manifesto Project (CMP), which has coded party manifestos in dozens of democracies since the 1970s, remains a reference in the field. But manual coding is expensive, slow, and difficult to replicate at scale.
-
-The introduction of automated text analysis methods, surveyed by \citet{grimmer2013text}, transformed the field. Bag-of-words representations and TF-IDF weighting, despite their well-known limitations (loss of word order, no semantics), proved surprisingly effective for many political science applications. The reason is that political texts are often highly repetitive: parties return to the same themes election after election, and ideological vocabulary is remarkably stable over time.
-
-Topic models, and Latent Dirichlet Allocation \citep{blei2003latent} in particular, became the dominant unsupervised method for political text analysis in the 2010s. \citet{quinn2010analyze} used dynamic topic models to study U.S. Senate floor speeches; \citet{roberts2014structural} extended LDA to incorporate document-level metadata. For French political corpora specifically, topic modeling has been applied to parliamentary debates \citep{bonnafous2003analyse} and presidential speeches, though we are not aware of prior work applying it to the Archelec manifesto collection at the scale we consider here.
-
-The ``fighting words'' framework of \citet{monroe2008fightin} provides a principled method for comparing vocabularies across groups. By computing log-odds ratios with an informative Dirichlet prior, the method identifies words that are disproportionately used by one group relative to another, controlling for overall verbosity. This goes beyond raw frequency counts and has been widely adopted in computational social science.
-
-Non-negative matrix factorisation (NMF), while less popular than LDA in political science, has been shown to produce sharper, more interpretable topics in certain settings \citep{lee1999learning}. More recently, BERTopic \citep{grootendorst2022bertopic} combines transformer-based embeddings with HDBSCAN clustering, bypassing the bag-of-words assumption entirely. We experiment with all three paradigms in this study.
-
-On the supervised side, logistic regression on TF-IDF features remains a strong baseline for text classification \citep{joachims1998text}, and its interpretability (through coefficient inspection) makes it particularly useful for political science, where understanding \textit{why} a model classifies a document matters as much as accuracy.
-
-
-% ====================================================================
-\section{Data and Preprocessing}
+\section{Data and preprocessing}
 \label{sec:data}
 
-\subsection{Corpus assembly}
+The corpus combines metadata from the Archelec catalogue (33,031 entries, 42 columns) with OCR transcriptions from ZIP archives. After joining on document identifiers (97.6\% match rate), the working dataset contains 21,697 manifestos across the five elections.
 
-The dataset combines two sources: a metadata CSV from the Archelec catalogue (33,031 entries covering all election types) and OCR transcriptions stored as text files in ZIP archives (one per election year). We restrict attention to the five legislative elections listed above. The join between metadata and transcriptions, performed on a unique document identifier embedded in each filename, achieves a 97.6\% match rate. After joining, the working corpus contains 21,697 documents with 47 metadata columns per entry.
+\textbf{Preprocessing.} Lowercasing, punctuation/digit removal, tokenization, three-layer stopword filtering (function words, domain terms, OCR watermarks), and lemmatisation via spaCy. Short documents ($<$100 characters) and German-language manifestos from Alsace-Moselle are excluded.
 
-\subsection{Text preprocessing}
+\textbf{Political families.} Raw party labels (hundreds of unique strings) are aggregated into six families: \textit{Gauche radicale} (PCF, LO, LCR), \textit{Gauche modérée} (PS, MRG), \textit{Écologistes}, \textit{Centre} (UDF, CDS), \textit{Droite} (RPR), and \textit{Extrême droite} (FN). Unaffiliated documents (18.6\%) are excluded.
 
-We follow a standard pipeline: lowercasing, removal of punctuation and digits, tokenization, and stopword filtering. The stopword list includes three layers: (i) standard French function words, (ii) domain-specific terms that appear in virtually every manifesto (\textit{circonscription}, \textit{candidat}, \textit{élections}), and (iii) OCR watermark artefacts from the ``Sciences Po / fonds CEVIPOF'' header systematically transcribed by the OCR engine. Documents shorter than 100 characters and German-language manifestos from Alsace-Moselle are excluded.
+\textbf{Profession mapping.} The 2,000+ unique profession strings are classified into 15 PCS categories via zero-shot NLI with XLM-RoBERTa \citep{conneau2020unsupervised}.
 
-Lemmatisation is performed using spaCy's \texttt{fr\_core\_news\_md} model, which we prefer to stemming because it produces valid dictionary forms rather than truncated word fragments --- an important consideration when the output is to be read and interpreted by a human analyst.
-
-\subsection{Political family classification}
-
-The raw \texttt{titulaire-soutien} field in the metadata contains hundreds of unique party labels, including coalition strings (e.g. ``RPR;UDF''). We aggregate these into six political families that structure the French partisan landscape during the period: \textit{Gauche radicale} (PCF, LO, LCR, PSU), \textit{Gauche modérée} (PS, MRG), \textit{Écologistes} (Verts, Génération Écologie), \textit{Centre} (UDF, CDS), \textit{Droite} (RPR, Gaullistes), and \textit{Extrême droite} (Front National). Documents with no party affiliation metadata (18.6\% of the corpus) are excluded from party-based analyses.
-
-\subsection{Profession mapping}
-
-The \texttt{titulaire-profession} field contains over 2,000 unique free-text entries. A keyword-based approach would miss the enormous lexical variability (abbreviations, regional terms, compound titles). We instead use a zero-shot classifier based on XLM-RoBERTa fine-tuned for Natural Language Inference \citep{conneau2020unsupervised}, assigning each profession string to one of 15 categories inspired by the French PCS nomenclature. The model evaluates hypotheses of the form \textit{``This person works as a [category]''} and selects the most probable category.
-
-
-% ====================================================================
-\section{Exploratory Analysis}
+\section{Exploratory analysis}
 \label{sec:exploration}
-
-Before turning to models, it is worth pausing on the descriptive structure of the corpus. Figure~\ref{fig:exploration} presents four panels summarising the basic statistics.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{exploration_base.png}
-\caption{Corpus overview. Top-left: number of documents per election year. Top-right: distribution of text lengths. Bottom-left: mean text length over time. Bottom-right: gender ratio across the corpus.}
+\includegraphics[width=\linewidth]{exploration_base.png}
+\caption{Corpus overview: documents per year, text-length distribution, mean text length, and gender ratio. Candidacies grow from 3,900 (1973) to 6,000 (1993); 82\%+ of candidates are male throughout.}
 \label{fig:exploration}
 \end{figure}
 
-The number of candidacies grows from approximately 3,900 in 1973 to nearly 6,000 in 1993, a trend driven primarily by the proliferation of parties --- ecological movements, far-right candidates fielded in every constituency, and various micro-parties. Average text length hovers between 3,400 and 5,000 characters (one to two printed pages), reflecting the physical constraints of the standardised leaflet format.
-
-The gender imbalance is stark: over 82\% of candidates are male throughout the period. This is unsurprising for the pre-parity era (the constitutional reform mandating gender parity in candidacies did not come until 1999--2000), but it does limit the statistical power of gender-based analyses.
+Figure~\ref{fig:exploration} summarises the corpus. Candidacy growth reflects party-system fragmentation; text length stays consistent (3,400--5,000 characters), constrained by the physical leaflet format.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{evolution_partis.png}
-\caption{Evolution of candidacies by political family across the five elections. The radical left declines steadily; the far right surges after 1981; ecologists grow throughout the period.}
-\label{fig:evolution}
-\end{figure}
-
-Figure~\ref{fig:evolution} makes visible the structural transformation of the French party system over twenty years. The \textit{Gauche radicale}, dominated by the PCF, sees its share contract as the Communist Party loses voters to the PS after 1981. The \textit{Extrême droite} (FN) goes from near-invisibility to a major force by 1988--1993, fielding candidates in virtually every constituency. The ecological family barely exists in 1973 but grows rapidly, especially after the 1992 Rio Earth Summit and the founding of Génération Écologie.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{heatmap_pcs_partis.png}
-\caption{Cross-tabulation of PCS profession categories and political families. Rows: profession categories (BERT zero-shot classification). Columns: political families.}
+\includegraphics[width=0.85\linewidth]{heatmap_pcs_partis.png}
+\caption{Cross-tabulation of BERT-classified PCS categories and political families. Teachers dominate the \textit{Gauche modérée}; blue-collar workers the \textit{Gauche radicale}; executives and lawyers the \textit{Droite}/\textit{Centre}.}
 \label{fig:pcs}
 \end{figure}
 
-The PCS-by-family heatmap (Figure~\ref{fig:pcs}) reveals the sociological recruitment base of each political tradition. Teachers and researchers dominate the \textit{Gauche modérée}, consistent with the Parti Socialiste's deep roots in the Éducation Nationale. Blue-collar workers concentrate in the \textit{Gauche radicale}, reflecting the PCF's historical base in industrial unions. The \textit{Droite} and \textit{Centre} recruit from senior executives, engineers, and legal professionals --- the economic and professional bourgeoisie. These patterns are well-documented in the French political sociology literature \citep{gaxie1978cens}, and the fact that a zero-shot BERT classifier applied to free-text profession fields recovers them provides a useful validation of the classification.
+The PCS heatmap (Figure~\ref{fig:pcs}) reveals the sociological bases of each tradition, consistent with the political sociology literature \citep{gaxie1978cens}. These well-documented patterns validate our zero-shot classification pipeline.
 
-
-% ====================================================================
-\section{Topic Modeling}
+\section{Topic modeling}
 \label{sec:topics}
 
 \subsection{Model selection}
 
-We train two families of topic models. LDA, following the course pipeline \citep{blei2003latent}, operates on raw term counts with a CountVectorizer (unigrams and bigrams, vocabulary capped at 10,000 terms). NMF \citep{lee1999learning} operates on TF-IDF representations with a tighter vocabulary (3,000 terms, $\text{min\_df}=15$) to avoid the micro-clustering behaviour that NMF exhibits with rare words.
-
-A critical design choice: we allow each model its own optimal number of topics $k$, selected via $C_v$ coherence \citep{roder2015exploring} computed in Gensim. Forcing both models to the same $k$ would disadvantage whichever model's optimal granularity differs. Furthermore, coherence alone is insufficient as a selection criterion. A model that assigns 80\% of documents to a single topic may score well on $C_v$ yet be analytically useless. We therefore impose a distribution balance constraint: models where the largest topic exceeds 50\% of the corpus are rejected.
+We train LDA on raw counts (unigrams/bigrams, 10,000 terms) and NMF on TF-IDF (3,000 terms). Optimal $k$ is selected by $C_v$ coherence \citep{roder2015exploring}, with a balance constraint: models where the largest topic exceeds 50\% are rejected. A critical preliminary step is removing $\sim$200 partisan terms (party names, leaders, slogans) identified through a baseline diagnostic; without this, both models latch onto party identity rather than policy content.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{optimal_k_clean.png}
-\caption{$C_v$ coherence as a function of $k$ for LDA and NMF. LDA's optimum is at $k{=}11$; NMF peaks at $k{=}5$ but produces a degenerate distribution (84.5\% of documents in one topic).}
+\includegraphics[width=0.75\linewidth]{optimal_k_clean.png}
+\caption{$C_v$ coherence vs.\ number of topics. LDA peaks at $k{=}11$ with balanced distribution (no topic $>$24\%). NMF peaks at $k{=}5$ but concentrates 84.5\% of documents in one topic---analytically useless.}
 \label{fig:coherence}
 \end{figure}
 
-An important preliminary step is the removal of partisan vocabulary --- party names, leader names, campaign slogans --- from the model's input. Without this, LDA and NMF both latch onto party identity rather than policy content, producing topics that are essentially party labels dressed up as themes. This is expected: when the most statistically distinctive word groups in a corpus are party-specific, any model optimising for word co-occurrence will find them first. Our partisan stopword list contains approximately 200 terms identified through the baseline LDA diagnostic.
-
-After grid search (Figure~\ref{fig:coherence}), LDA at $k{=}11$ achieves $C_v = 0.49$ with a well-balanced distribution (no topic exceeds 24\% of the corpus). NMF at $k{=}5$ achieves $C_v = 0.71$ but concentrates 84.5\% of documents in a single background topic, rendering it useless for cross-analysis. We select LDA as the primary model.
+After grid search (Figure~\ref{fig:coherence}), LDA at $k{=}11$ achieves $C_v = 0.49$ with no topic exceeding 24\% of the corpus. NMF at $k{=}5$ scores $C_v = 0.71$ but is degenerate. We select LDA.
 
 \subsection{Topic structure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{lda_topic_words.png}
-\caption{Top words for each of the 11 LDA topics, after partisan vocabulary removal. Topics are manually labelled based on their word distributions.}
+\includegraphics[width=\linewidth]{lda_topic_words.png}
+\caption{Top words per LDA topic (partisan vocabulary removed). Three clusters emerge: labour and class struggle (Topics 0, 5, 9), institutional governance (1, 3, 4), and issue-specific themes---ecology (2, 7, 10), immigration (8), social protection (6).}
 \label{fig:topics}
 \end{figure}
 
-Figure~\ref{fig:topics} displays the top words for each topic. The model captures a rich thematic landscape. We identify three broad clusters:
+The 11 topics (Figure~\ref{fig:topics}) form three clusters. The \textbf{labour block} (Topics 0, 5, 9) spans employer--employee dynamics, militant Marxist vocabulary, and the 1981 Mitterrandist mobilisation. The \textbf{institutional block} (1, 3, 4) captures presidential-majority rhetoric, left-wing alliance language, and right-wing coalition discourse. \textbf{Issue topics} cover ecology (three topics tracking the movement's evolution), FN immigration rhetoric (8), and social protection (6).
 
-\textbf{The labour and class-struggle block} (Topics 0, 5, 9) separates different registers of economic discourse. Topic 0 captures employer--employee power dynamics; Topic 5 uses militant, Marxist vocabulary (\textit{travailleurs}, \textit{lutte}, \textit{ouvrier}); Topic 9 isolates the specific rhetoric of the 1981 Mitterrandist mobilisation (\textit{changement}, \textit{espoir}).
-
-\textbf{The institutional and values block} (Topics 1, 3, 4) covers the meta-discourse of governance. Topic 1 captures presidential-majority rhetoric (\textit{confiance}, \textit{liberté}, \textit{progrès}). Topics 3 and 4 encode partisan cleavage: the left-wing alliance vocabulary (\textit{programme commun}, \textit{union}) versus the right-wing coalition (\textit{majorité}, \textit{réforme}).
-
-\textbf{Issue-specific topics} include ecology (Topics 2, 7, 10), immigration and national identity (Topic 8, FN rhetoric), and social protection (Topic 6, \textit{retraite}, \textit{sécurité sociale}).
-
-The three ecology topics are particularly interesting. They track the historical evolution of French environmentalism: Topic 10 captures the 1970s ecology-left (anti-nuclear, feminist), Topic 2 the niche of radical ecology and animal rights, and Topic 7 the institutionalised Green politics of the late 1980s.
-
-\subsection{Temporal dynamics}
+\subsection{Temporal dynamics and political family specialisation}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{evolution_topics_v2.png}
-\caption{Temporal evolution of topic shares across the five elections (stacked bars). Note the growing salience of immigration-related discourse (Topic 8) and ecology (Topic 7) from 1981 onward.}
-\label{fig:temporal}
-\end{figure}
-
-The temporal evolution (Figure~\ref{fig:temporal}) captures genuine political dynamics. The immigration topic rises sharply after 1981, tracking the Front National's electoral breakthrough. The ecology cluster grows throughout the period, consistent with the institutionalisation of environmental politics. The class-struggle topics decline over time, mirroring the PCF's electoral erosion and the broader retreat of Marxist vocabulary from mainstream political discourse.
-
-\subsection{Topic specialisation by political family}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{party_specialization.png}
-\caption{Topic specialisation ratio by political family. Values above 1 indicate over-representation relative to the corpus-wide average; below 1, under-representation. A family that ``specialises'' in a topic discusses it more than average.}
+\includegraphics[width=0.9\linewidth]{party_specialization.png}
+\caption{Topic specialisation by political family. Over-representation ratio ($>$1 means the family discusses the topic more than average). Niche families (radical left, far right, ecologists) show strong specialisation; mainstream families (centre, right) are more diffuse.}
 \label{fig:specialisation}
 \end{figure}
 
-Figure~\ref{fig:specialisation} quantifies thematic specialisation. The \textit{Gauche radicale} heavily over-represents class-struggle topics. The \textit{Extrême droite} concentrates on immigration and national identity. The \textit{Écologistes} specialise, naturally, in ecology-related topics. The \textit{Droite} and \textit{Centre} have flatter profiles, over-representing institutional and governance topics but less dramatically than the extremes.
+Figure~\ref{fig:specialisation} quantifies thematic specialisation. Niche families---\textit{Gauche radicale}, \textit{Extrême droite}, \textit{Écologistes}---show strong over-representation in their signature topics. Mainstream families (\textit{Droite}, \textit{Centre}) have flatter profiles. Yet all families share broadly similar topic distributions: the differentiation happens not in \textit{what} they discuss but in \textit{how}---motivating Section~\ref{sec:framing}.
 
-These patterns are largely expected. What is perhaps more interesting is the cross-family similarity matrix (Figure~\ref{fig:cosine}), which shows that \textit{all} political families have cosine similarities close to 1.0 in the topic-distribution space. In other words, at the level of broad thematic allocation, every family talks about roughly the same things. The differentiation happens not in \textit{what} they discuss, but in \textit{how} they discuss it --- a finding that motivates the framing analysis in Section~\ref{sec:framing}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{family_cosine_similarity.png}
-\caption{Cosine similarity between political family centroids in topic space. All values are close to 1.0, indicating that families address the same broad themes in similar proportions.}
-\label{fig:cosine}
-\end{figure}
-
-
-% ====================================================================
-\section{Supervised Classification}
+\section{Supervised classification}
 \label{sec:classification}
 
-\subsection{Setup}
-
-We now test a different question: given only the text of a manifesto, can a classifier determine which political family produced it? This is a standard multi-class text classification task. The feature matrix is a TF-IDF representation (unigrams and bigrams, max 10,000 features) and the classifier is logistic regression with L2 regularisation. We evaluate using 5-fold stratified cross-validation.
-
-\subsection{Results}
+Given only the text, can a classifier determine which family wrote it? We train logistic regression (L2) on TF-IDF features (unigrams and bigrams, 10,000 features) with 5-fold stratified cross-validation.
 
 \begin{figure}[H]
 \centering
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{confusion_matrix.png}
-\caption{Normalised confusion matrix. Each row is the true family; each column is the predicted family.}
+\includegraphics[width=\linewidth]{confusion_matrix.png}
+\caption{Normalised confusion matrix (logistic regression, 5-fold CV). Gauche radicale and Extrême droite achieve the highest diagonal values. Centre is most confused with Droite, reflecting genuine vocabulary overlap from decades of governing together.}
 \label{fig:confusion}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{f1_by_family.png}
-\caption{F1 scores by political family. Gauche radicale and Extrême droite are the easiest to classify; Centre is the hardest.}
-\label{fig:f1}
-\end{minipage}
 \end{figure}
 
-The classifier achieves strong overall performance. The F1 scores (Figure~\ref{fig:f1}) reveal a hierarchy of classifiability that aligns perfectly with the topic-model findings. The \textit{Gauche radicale} and \textit{Extrême droite}, which occupy the most isolated regions in t-SNE space and have the most distinctive vocabularies, are classified with high accuracy. The \textit{Centre}, whose vocabulary overlaps heavily with the \textit{Droite} (governmental rhetoric, institutional terms, liberal-economic language), is frequently misclassified --- it is the dominant off-diagonal pattern in the confusion matrix (Figure~\ref{fig:confusion}).
-
-This Centre/Droite confusion is not a failure of the model. It reflects a genuine sociolinguistic reality: UDF and RPR candidates in the 1978--1993 period governed together, shared candidates in many constituencies, and used much of the same institutional vocabulary. Separating them on text alone is genuinely hard, and one might argue that the difficulty is informative.
+The confusion matrix (Figure~\ref{fig:confusion}) reveals a hierarchy of classifiability: \textit{Gauche radicale} and \textit{Extrême droite} are classified accurately; \textit{Centre} is frequently confused with \textit{Droite}, reflecting genuine vocabulary overlap from decades of governing together.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{lr_features_by_family.png}
-\caption{Most discriminative TF-IDF features per political family (logistic regression coefficients), after filtering out party names and trivially identifying tokens.}
+\includegraphics[width=\linewidth]{lr_features_by_family.png}
+\caption{Most discriminative TF-IDF features per family (logistic regression coefficients, partisan labels filtered out). Class struggle for the radical left, immigration for the far right, ecology for the Greens, enterprise vocabulary for the right.}
 \label{fig:features}
 \end{figure}
 
-Figure~\ref{fig:features} shows the most discriminative features after filtering out party names. The remaining terms reveal ideological signatures rather than mere labels: the \textit{Gauche radicale} is identified by vocabulary of class struggle (\textit{travailleurs}, \textit{patronat}, \textit{lutte}); the \textit{Extrême droite} by immigration and security terms; the \textit{Écologistes} by environmental vocabulary; and the \textit{Droite} by enterprise and reform language.
+After filtering party names, Figure~\ref{fig:features} exposes each family's ideological lexicon. These signatures align with topic-level specialisation but provide finer grain. The learning curve plateaus at $\sim$60\% of training data, suggesting model expressiveness---not data quantity---is the bottleneck.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.65\textwidth]{learning_curve.png}
-\caption{Learning curve (5-fold CV). Performance plateaus with approximately 60\% of the training data, suggesting that the limiting factor is model expressiveness, not data quantity.}
-\label{fig:learning}
-\end{figure}
-
-The learning curve (Figure~\ref{fig:learning}) plateaus relatively early, which indicates that additional data would not substantially improve a linear classifier. The gap between training and validation scores is modest, ruling out severe overfitting. A more expressive model --- for instance, a fine-tuned CamemBERT --- would be the natural next step to improve performance, particularly for the harder classes (Centre, Gauche modérée).
-
-
-% ====================================================================
-\section{Rhetorical Framing and Macroeconomic Context}
+\section{Rhetorical framing and macroeconomic context}
 \label{sec:framing}
 
-\subsection{Fighting words: how families frame shared topics}
+\subsection{Fighting words}
 
-The cosine similarity analysis in Section~\ref{sec:topics} established that political families discuss the same broad themes in similar proportions. The question, then, is how they discuss them. We use the log-odds ratio with informative Dirichlet prior \citep{monroe2008fightin} to identify words that are disproportionately favoured by one family over another when discussing a shared topic.
-
-For a topic $t$ and two families $A$ and $B$, the log-odds for word $w$ is:
-\begin{equation}
-\delta^{(A,B)}_w = \log\frac{f^A_w + \alpha}{N^A + V\alpha} - \log\frac{f^B_w + \alpha}{N^B + V\alpha}
-\end{equation}
-where $f^A_w$ is the frequency of $w$ in family $A$'s documents assigned to topic $t$, $N^A$ is the total word count, $V$ the vocabulary size, and $\alpha$ a smoothing parameter.
+Topic models show \textit{that} families share themes; the question is \textit{how} they frame them. We use log-odds ratios with informative Dirichlet prior \citep{monroe2008fightin}:
+\[
+\delta^{(A,B)}_w \!=\! \log\!\tfrac{f^A_w + \alpha}{N^A + V\alpha} - \log\!\tfrac{f^B_w + \alpha}{N^B + V\alpha}
+\]
+where $f^A_w$ counts word $w$ in family $A$'s documents on topic $t$ and $\alpha$ smooths for verbosity.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{fighting_words_employment.png}
-\caption{Fighting words analysis on the employment topic. Left--right contrast: words used disproportionately by each family when discussing unemployment and work.}
+\includegraphics[width=\linewidth]{fighting_words_employment.png}
+\caption{Fighting words on the employment topic. The radical left frames unemployment through \textit{travailleurs} and \textit{patronat}; the far right through \textit{immigration} and \textit{insécurité}; the moderate left uses \textit{emploi}, \textit{formation}; the right invokes \textit{entreprise} and \textit{charges}. Same topic, different worlds.}
 \label{fig:fighting}
 \end{figure}
 
-Figure~\ref{fig:fighting} displays the results for the employment topic, chosen because all political families take a position on it. The contrast is vivid. When discussing unemployment, the radical left speaks of \textit{travailleurs}, \textit{lutte}, and \textit{patronat} --- the vocabulary of class conflict and collective action. The far right frames the same issue through \textit{immigration}, \textit{insécurité}, and national preference. The moderate left uses a managerial register (\textit{emploi}, \textit{formation}, \textit{solidarité}), while the right invokes \textit{entreprise}, \textit{charges}, and fiscal discipline. Same topic, radically different frames.
+Figure~\ref{fig:fighting} shows the employment topic. The radical left speaks of \textit{travailleurs}, \textit{patronat}---class conflict. The far right frames the same reality through \textit{immigration} and \textit{insécurité}. The moderate left uses a managerial register (\textit{emploi}, \textit{formation}). The right invokes \textit{entreprise} and \textit{charges}. Same policy domain, radically different rhetorical universes.
 
-\subsection{Discourse and macroeconomic reality}
+\subsection{Discourse vs.\ macroeconomic reality}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{macro_econ_extended.png}
-\caption{Top panel: national inflation and unemployment rates (INSEE series) over the period. Bottom panel: frequency of economic vocabulary in manifestos, broken down by political family and election year.}
+\includegraphics[width=\linewidth]{macro_econ_extended.png}
+\caption{Left: national inflation and unemployment (INSEE). Right: economic vocabulary frequency in manifestos by family. Discourse broadly tracks macroeconomic stress---highest in 1978--1981 (stagflation), declining in 1988 (disinflation), rebounding in 1993 (recession).}
 \label{fig:macro}
 \end{figure}
 
-Does discourse respond to economic reality, or does it follow its own partisan logic? Figure~\ref{fig:macro} overlays INSEE macroeconomic indicators (consumer price inflation and unemployment rate) with the frequency of economic vocabulary in the manifestos.
+Figure~\ref{fig:macro} overlays INSEE data with economic vocabulary frequency. Economic vocabulary peaks in 1978--1981 (stagflation era, inflation at 13.4\%), declines in 1988 as inflation recedes, then rebounds in 1993---now oriented toward unemployment (11.6\%) rather than prices. Campaign rhetoric is partly responsive to material conditions, not purely strategic.
 
-The 1970s are dominated by stagflation: inflation peaks at 13.4\% in 1981, while unemployment rises steadily. The disinflation of the \textit{tournant de la rigueur} (1983) succeeds, but unemployment crosses 10\% in 1985 and never falls back. By 1993, the economy combines low inflation (2.1\%) with record unemployment (11.6\%).
-
-The discourse broadly tracks these macroeconomic shifts. Economic vocabulary is most frequent in the 1978 and 1981 elections, when inflation and purchasing power were central campaign issues. It declines in 1988 as inflation recedes, then rebounds modestly in 1993 --- but oriented toward unemployment rather than prices. The disaggregation by political family reveals that the left uses economic vocabulary more consistently than the right, though both respond to the same macroeconomic signals. This suggests that campaign rhetoric is partly responsive to material conditions, not purely a function of ideological positioning.
-
-
-% ====================================================================
-\section{Semantic Geometry}
-\label{sec:tsne}
+\section{Semantic geometry}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{tsne_by_family.png}
-\caption{t-SNE projection of LDA topic-distribution vectors, coloured by political family. Each point is one manifesto ($n = 21{,}139$). Perplexity = 50, cosine distance, PCA initialisation.}
+\includegraphics[width=0.85\linewidth]{tsne_by_family.png}
+\caption{t-SNE projection of LDA topic vectors ($n{=}21{,}139$, perplexity${}=50$, cosine distance). Gauche radicale and Extrême droite occupy isolated regions; Droite and Centre overlap considerably; Gauche modérée bridges the left and institutional themes.}
 \label{fig:tsne}
 \end{figure}
 
-The t-SNE projection (Figure~\ref{fig:tsne}) of the LDA topic-distribution vectors onto two dimensions provides a direct visual summary of the corpus's thematic geography. The \textit{Gauche radicale} and \textit{Extrême droite} occupy the most isolated regions, consistent with their distinctive vocabularies. The \textit{Droite} and \textit{Centre} overlap considerably, reflecting their shared governmental language. The \textit{Gauche modérée} occupies an intermediate position, bridging left-wing social themes and institutional discourse.
+The t-SNE projection (Figure~\ref{fig:tsne}) maps 11-dimensional topic vectors to two dimensions \citep{vandermaaten2008}. \textit{Gauche radicale} and \textit{Extrême droite} form isolated clusters; \textit{Droite} and \textit{Centre} overlap heavily. The geometry confirms every other analysis: ideological extremes are distinctive, the centre is diffuse.
 
-This map should be read with care. t-SNE preserves local neighbourhood structure but does not preserve global distances \citep{vandermaaten2008}: two distant clusters are not necessarily thematically unrelated, and the absolute positions of clusters are arbitrary. What is informative is the relative proximity and the degree of separation between clusters.
-
-
-% ====================================================================
 \section{Discussion}
-\label{sec:discussion}
 
-Three findings seem worth emphasising.
+Three findings deserve emphasis. First, unsupervised and supervised methods complement each other: topic modeling reveals shared themes; classification shows families are nonetheless distinguishable; fighting words show the distinction operates through vocabulary, not topics. Second, the hierarchy of classifiability is informative---niche parties cultivate distinctive discursive identities while catch-all parties blur them \citep{meguid2005competition}. Third, the temporal dimension captures genuine political dynamics: immigration discourse tracks the FN's breakthrough, class-struggle vocabulary mirrors the PCF's decline, and ecology follows the Green movement's institutionalisation.
 
-First, the combination of unsupervised and supervised methods produces a richer picture of the corpus than either approach alone. Topic modeling reveals the latent thematic structure but shows, through the cosine similarity analysis, that all families address roughly the same themes. Supervised classification then demonstrates that families \textit{are} distinguishable --- but through vocabulary choice, not topic allocation. The fighting-words analysis completes the picture by showing exactly which words carry the ideological signal.
+\textbf{Limitations.} OCR quality varies (worse for 1973, 1978). Class imbalance affects minority-class reliability. We use hard topic assignments ($\arg\max$) rather than soft memberships. The discourse--reality correlation is ecological \citep{robinson1950ecological}. Transformer-based classifiers (CamemBERT) might improve harder classes.
 
-Second, the hierarchy of classifiability is itself informative. Families at the ideological extremes (radical left, far right) have the most distinctive linguistic signatures and are easiest to classify. Centrist and moderate families, whose language is more diffuse and overlaps with their neighbours, are harder. This is consistent with the political science literature on ``niche parties'' versus ``catch-all parties'' \citep{meguid2005competition}: niche parties cultivate distinctive discursive identities, while catch-all parties deliberately blur their ideological contours.
-
-Third, the temporal dimension reveals genuine political dynamics, not just statistical noise. The rise of immigration discourse tracks the FN's electoral breakthrough. The decline of class-struggle vocabulary mirrors the PCF's erosion. The emergence of ecology as a distinct thematic cluster follows the institutionalisation of the Green movement. These trends are well-documented in political history; the fact that our unsupervised models recover them from OCR-processed text is both a validation of the methods and a demonstration of their utility.
-
-\textbf{Limitations.} The OCR quality varies across elections, with older documents (1973, 1978) containing more recognition errors. The class imbalance (Écologistes and Centre are minority classes) affects classifier reliability. Our topic model uses hard assignments ($\arg\max$) rather than soft memberships, which discards information. The ``discourse vs. reality'' correlation is ecological in the statistical sense \citep{robinson1950ecological}: relationships at the departmental or national level need not hold for individual candidates. Finally, we have not explored transformer-based models (CamemBERT, BERTopic with fine-tuning) that might capture semantic relationships beyond the bag-of-words assumption.
-
-
-% ====================================================================
 \section{Conclusion}
-\label{sec:conclusion}
 
-This paper has applied classical NLP methods --- LDA topic modeling, TF-IDF logistic regression, log-odds rhetorical analysis --- to a corpus of 21,697 French electoral manifestos spanning 1973--1993. The key insight is that political differentiation in these documents operates primarily at the level of vocabulary, not topics. All families discuss roughly the same policy themes, but they frame them through ideologically distinctive language. This finding has implications for computational political science: topic models alone miss the most interesting variation; supervised and lexical methods are needed to capture it.
+Political differentiation in French electoral manifestos operates at the vocabulary level, not the topic level. All families discuss the same themes; they frame them through ideologically distinctive language. Supervised and lexical methods---logistic regression, log-odds ratios---are needed to capture this variation, which topic models alone miss. Classical NLP methods carry the analysis further than one might expect: interpretable baselines let you read the coefficients and understand \textit{why} a document belongs where it does. A natural extension is fine-tuned CamemBERT for studying how the semantics of political words shift across elections.
 
-The Archelec corpus, despite its OCR noise and the formulaic nature of its documents, proves rich enough to support detailed cross-party and temporal analyses. A natural extension would be to bring in transformer-based methods --- fine-tuned CamemBERT for classification, or contextual embeddings for studying how the semantics of key political words shift across elections. But the classical methods have carried us further than one might expect, and there is something to be said for that.
+\medskip
 
+{
+\small
 
-% ====================================================================
 \bibliographystyle{plainnat}
 \begin{thebibliography}{99}
 
 \bibitem[Blei et~al.(2003)]{blei2003latent}
 Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
-\newblock Latent {D}irichlet {A}llocation.
-\newblock \emph{Journal of Machine Learning Research}, 3:993--1022.
+Latent {D}irichlet {A}llocation.
+\textit{JMLR}, 3:993--1022.
 
 \bibitem[Bonnafous and Tournier(2003)]{bonnafous2003analyse}
 Bonnafous, S. and Tournier, M. (2003).
-\newblock Analyse du discours, lexicométrie, communication et politique.
-\newblock In Sfez, L., editor, \emph{Dictionnaire critique de la communication}. PUF, Paris.
+Analyse du discours, lexicométrie, communication et politique.
+In Sfez, L., ed., \textit{Dict.\ critique de la communication}. PUF.
 
 \bibitem[Budge et~al.(2001)]{budge2001mapping}
 Budge, I., Klingemann, H.-D., Volkens, A., Bara, J., and Tanenbaum, E. (2001).
-\newblock \emph{Mapping Policy Preferences: Estimates for Parties, Electors, and Governments 1945--1998}.
-\newblock Oxford University Press.
+\textit{Mapping Policy Preferences}. OUP.
 
 \bibitem[Conneau et~al.(2020)]{conneau2020unsupervised}
-Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán, F., Grave, E., Ott, M., Zettlemoyer, L., and Stoyanov, V. (2020).
-\newblock Unsupervised cross-lingual representation learning at scale.
-\newblock In \emph{Proceedings of ACL}, pages 8440--8451.
+Conneau, A., et~al. (2020).
+Unsupervised cross-lingual representation learning at scale.
+In \textit{Proc.\ ACL}, pp.~8440--8451.
 
 \bibitem[Gaxie(1978)]{gaxie1978cens}
 Gaxie, D. (1978).
-\newblock \emph{Le cens caché: inégalités culturelles et ségrégation politique}.
-\newblock Éditions du Seuil, Paris.
+\textit{Le cens caché}. Seuil.
 
 \bibitem[Grimmer and Stewart(2013)]{grimmer2013text}
 Grimmer, J. and Stewart, B.~M. (2013).
-\newblock Text as data: The promise and pitfalls of automatic content analysis methods for political texts.
-\newblock \emph{Political Analysis}, 21(3):267--297.
+Text as data.
+\textit{Political Analysis}, 21(3):267--297.
 
 \bibitem[Grootendorst(2022)]{grootendorst2022bertopic}
 Grootendorst, M. (2022).
-\newblock {BERTopic}: Neural topic modeling with a class-based {TF-IDF} procedure.
-\newblock \emph{arXiv preprint arXiv:2203.05794}.
+{BERTopic}: Neural topic modeling with class-based {TF-IDF}.
+\textit{arXiv:2203.05794}.
 
 \bibitem[Joachims(1998)]{joachims1998text}
 Joachims, T. (1998).
-\newblock Text categorization with support vector machines: Learning with many relevant features.
-\newblock In \emph{ECML '98}, pages 137--142. Springer.
+Text categorization with SVMs.
+In \textit{ECML}, pp.~137--142.
 
 \bibitem[Lee and Seung(1999)]{lee1999learning}
 Lee, D.~D. and Seung, H.~S. (1999).
-\newblock Learning the parts of objects by non-negative matrix factorization.
-\newblock \emph{Nature}, 401(6755):788--791.
+Learning the parts of objects by NMF.
+\textit{Nature}, 401:788--791.
 
 \bibitem[Meguid(2005)]{meguid2005competition}
 Meguid, B.~M. (2005).
-\newblock Competition between unequals: The role of mainstream party strategy in niche party success.
-\newblock \emph{American Political Science Review}, 99(3):347--359.
+Competition between unequals.
+\textit{APSR}, 99(3):347--359.
 
 \bibitem[Monroe et~al.(2008)]{monroe2008fightin}
 Monroe, B.~L., Colaresi, M.~P., and Quinn, K.~M. (2008).
-\newblock Fightin' words: Lexical feature selection and evaluation for identifying the content of political conflict.
-\newblock \emph{Political Analysis}, 16(4):372--403.
+Fightin' words.
+\textit{Political Analysis}, 16(4):372--403.
 
 \bibitem[Quinn et~al.(2010)]{quinn2010analyze}
-Quinn, K.~M., Monroe, B.~L., Colaresi, M., Crespin, M.~H., and Radev, D.~R. (2010).
-\newblock How to analyze political attention with minimal assumptions and costs.
-\newblock \emph{American Journal of Political Science}, 54(1):209--228.
+Quinn, K.~M., et~al. (2010).
+How to analyze political attention with minimal assumptions.
+\textit{AJPS}, 54(1):209--228.
 
 \bibitem[Roberts et~al.(2014)]{roberts2014structural}
-Roberts, M.~E., Stewart, B.~M., Tingley, D., Lucas, C., Leder-Luis, J., Gadarian, S.~K., Albertson, B., and Rand, D.~G. (2014).
-\newblock Structural topic models for open-ended survey responses.
-\newblock \emph{American Journal of Political Science}, 58(4):1064--1082.
+Roberts, M.~E., et~al. (2014).
+Structural topic models for open-ended survey responses.
+\textit{AJPS}, 58(4):1064--1082.
 
 \bibitem[Robinson(1950)]{robinson1950ecological}
 Robinson, W.~S. (1950).
-\newblock Ecological correlations and the behavior of individuals.
-\newblock \emph{American Sociological Review}, 15(3):351--357.
+Ecological correlations and individual behavior.
+\textit{ASR}, 15(3):351--357.
 
-\bibitem[Röder et~al.(2015)]{roder2015exploring}
-Röder, M., Both, A., and Hinneburg, A. (2015).
-\newblock Exploring the space of topic coherence measures.
-\newblock In \emph{WSDM '15}, pages 399--408. ACM.
+\bibitem[R\"{o}der et~al.(2015)]{roder2015exploring}
+R\"{o}der, M., Both, A., and Hinneburg, A. (2015).
+Exploring the space of topic coherence measures.
+In \textit{WSDM}, pp.~399--408.
 
 \bibitem[van der Maaten and Hinton(2008)]{vandermaaten2008}
 van~der~Maaten, L. and Hinton, G. (2008).
-\newblock Visualizing data using {t-SNE}.
-\newblock \emph{Journal of Machine Learning Research}, 9:2579--2605.
+Visualizing data using {t-SNE}.
+\textit{JMLR}, 9:2579--2605.
 
 \bibitem[Vaswani et~al.(2017)]{vaswani2017attention}
-Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.~N., Kaiser, {\L}., and Polosukhin, I. (2017).
-\newblock Attention is all you need.
-\newblock In \emph{Advances in Neural Information Processing Systems}, pages 5998--6008.
+Vaswani, A., et~al. (2017).
+Attention is all you need.
+In \textit{NeurIPS}, pp.~5998--6008.
 
 \end{thebibliography}
+}
 
-
-% ====================================================================
-\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
-\section*{Appendices}
-\addcontentsline{toc}{section}{Appendices}
 
-\subsection*{A. Profession classification via zero-shot inference}
+\section{Zero-shot profession classification}
 \label{app:bert}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{professions_pcs_bert.png}
-\caption{Distribution of BERT-classified PCS categories across the full corpus. Teachers and researchers form the largest group (12.5\%), followed by legal professionals (9.6\%).}
+\includegraphics[width=0.8\linewidth]{professions_pcs_bert.png}
+\caption{BERT-classified PCS categories. Teachers form the largest group (12.5\%), followed by legal professionals (9.6\%), consistent with the known profile of French political candidates.}
 \label{fig:bert_pcs}
 \end{figure}
 
-The zero-shot classification pipeline works as follows. For each unique profession string $p$ in the corpus, the XLM-RoBERTa model evaluates the entailment probability of the hypothesis ``Cette personne travaille comme $c_i$'' for each of the 15 candidate labels. The predicted category is $\hat{c} = \arg\max_i P(\text{entailment} \mid p, c_i)$. This NLI-based approach bypasses the need for training data entirely and handles the high lexical variability of the profession field (abbreviations, regional terms, compound titles) much better than a rule-based approach could.
+For each unique profession string $p$, XLM-RoBERTa evaluates entailment of ``Cette personne travaille comme $c_i$'' for 15 candidate labels. The predicted category is $\hat{c} = \arg\max_i P(\text{entailment} \mid p, c_i)$. This NLI approach handles abbreviations, regional terms, and compound titles far better than rules.
 
-The resulting distribution (Figure~\ref{fig:bert_pcs}) is consistent with the known sociological profile of French political candidates. The strong presence of teachers reflects a long tradition documented in the political science literature; the over-representation of legal professionals echoes the historical dominance of lawyers in parliamentary life.
-
-
-\subsection*{B. Additional topic model comparisons}
-\label{app:models}
-
-We experimented with BERTopic \citep{grootendorst2022bertopic} as a third paradigm, using Sentence-Transformers embeddings with UMAP dimensionality reduction and HDBSCAN clustering. While BERTopic produces semantically coherent topic clusters, the resulting topics are less stable across random seeds than LDA, and the framework's reliance on dense embeddings makes it difficult to perform the same interpretive analyses (coefficient inspection, log-odds computation) that we rely on throughout this paper. We therefore use LDA as our primary model but acknowledge that BERTopic represents a promising direction for future work.
-
-The NMF model, despite achieving higher $C_v$ coherence (0.71 vs 0.49), was rejected because it assigns 84.5\% of documents to a single dominant topic. This pathological concentration is a known failure mode of NMF in the absence of the Dirichlet priors that regularise LDA's topic distributions. NMF excels at isolating hyper-specific micro-clusters (e.g., animal welfare candidates, specific regional issues) but fails to provide a balanced thematic decomposition of the corpus.
-
-
-\subsection*{C. Topic--metadata cross-analyses}
-\label{app:cross}
+\section{Topic--family heatmap}
+\label{app:heatmap}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{heatmap_topics_v2_partis.png}
-\caption{Full heatmap of topic shares by political family. Each column is a topic, each row a family. Darker cells indicate higher share. The diagonal pattern confirms that each family has a distinctive thematic profile, though no topic is exclusive to any one family.}
+\includegraphics[width=\linewidth]{heatmap_topics_v2_partis.png}
+\caption{Full heatmap of topic shares by political family. No topic is exclusive to a single family---the closest is the FN rhetoric topic. Most topics are cross-cutting, reinforcing the claim that differentiation operates through vocabulary, not topic allocation.}
 \label{fig:heatmap_full}
 \end{figure}
 
-The full heatmap (Figure~\ref{fig:heatmap_full}) confirms the specialisation patterns described in Section~\ref{sec:topics}. No topic is exclusive to a single family --- the closest to exclusivity is the FN rhetoric topic (Topic 8), which the \textit{Extrême droite} dominates but does not monopolise, since some other families address immigration in passing. The cross-cutting nature of most topics reinforces the central finding that ideological differentiation operates at the vocabulary level, not the topic level.
+\section{Model comparison and BERTopic}
+\label{app:models}
 
+We compared LDA ($k{=}11$, $C_v{=}0.49$, max topic share 23.6\%) with NMF ($k{=}5$, $C_v{=}0.71$, max topic share 84.5\%). NMF's higher coherence is misleading: the model is degenerate, concentrating nearly all documents in one background topic. NMF excels at isolating micro-clusters (animal welfare, specific local issues) but fails as a general decomposition.
 
-\subsection*{D. Methodological notes}
+We also experimented with BERTopic (Sentence-Transformers + UMAP + HDBSCAN). While it produces semantically coherent clusters, the topics are less stable across seeds, and the dense-embedding framework makes coefficient inspection and log-odds computation impractical. LDA's interpretability---you can read the word lists, inspect the $\theta$ vectors, compute specialisation ratios---was decisive for our research questions.
+
+\section{Methodological notes}
 \label{app:method}
 
-\textbf{Reproducibility.} All computations are checkpointed. The t-SNE embedding, which is stochastic, is computed once and saved. LDA models are trained with a fixed random seed.
+\textbf{Reproducibility.} All expensive computations are checkpointed. t-SNE (stochastic) is computed once and saved. LDA uses a fixed random seed.
 
-\textbf{German-language filtering.} The Alsace-Moselle departments have a tradition of bilingual electoral materials. Without filtering, these produce a spurious ``German language'' topic unrelated to French political themes. We identify and remove them using a simple language-detection heuristic applied to the raw text.
+\textbf{German-language filtering.} Alsace-Moselle departments produce bilingual manifestos. Without filtering, these create a spurious ``German'' topic. We remove them via a language-detection heuristic.
 
-\textbf{OCR quality.} The Archelec transcriptions contain recognition errors, particularly in older documents (1973, 1978) where printing quality and typefaces differ from modern standards. Common OCR artefacts include character confusions (\textit{l}/\textit{1}, \textit{O}/\textit{0}), word splits, and header/footer noise. Our preprocessing removes the most systematic artefacts (the ``Sciences Po / fonds CEVIPOF'' watermark), but residual noise remains. A future improvement would be to apply post-OCR correction using language models.
+\textbf{OCR quality.} Older documents (1973, 1978) contain more recognition errors: character confusions (\textit{l}/\textit{1}), word splits, header noise. We remove the systematic ``Sciences Po / fonds CEVIPOF'' watermark, but residual noise remains. Post-OCR correction with language models is a natural improvement.
 
+\textbf{Learning curve.} The classifier's performance plateaus at $\sim$60\% of training data, indicating model expressiveness---not data size---is the bottleneck. Fine-tuning CamemBERT would likely improve minority-class performance (Centre, Écologistes).
 
 \end{document}

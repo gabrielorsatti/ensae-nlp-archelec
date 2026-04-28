@@ -1,0 +1,84 @@
+% neurips_2026.sty - Style file for NeurIPS 2026
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{neurips_2026}[2026/01/01 NeurIPS 2026 submission style]
+
+\newif\if@neuripsfinal\@neuripsfinalfalse
+\newif\if@neuripspreprint\@neuripspreprintfalse
+\newif\if@neuripsnonatbib\@neuripsnonatbibfalse
+\newif\if@neuripsanonymous\@neuripsanonymoustrue
+
+\DeclareOption{final}{\@neuripsfinaltrue\@neuripsanonymousfalse}
+\DeclareOption{preprint}{\@neuripspreprinttrue\@neuripsanonymousfalse}
+\DeclareOption{nonatbib}{\@neuripsnonatbibtrue}
+\DeclareOption{main}{}
+\DeclareOption{position}{}
+\DeclareOption{eandd}{}
+\DeclareOption{creativeai}{}
+\DeclareOption{sglblindworkshop}{}
+\DeclareOption{dblblindworkshop}{}
+\DeclareOption{nonanonymous}{\@neuripsanonymousfalse}
+\ProcessOptions\relax
+
+\RequirePackage{times}
+\RequirePackage{geometry}
+\geometry{letterpaper,textwidth=5.5in,textheight=9in,left=1.5in,top=1in,headheight=12pt,headsep=25pt,footskip=30pt}
+
+\if@neuripsfinal\else
+  \if@neuripspreprint\else
+    \RequirePackage[mathlines]{lineno}
+    \linenumbers
+  \fi
+\fi
+
+\if@neuripsnonatbib\else
+  \RequirePackage[numbers,sort&compress]{natbib}
+\fi
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5.5pt}
+
+\RequirePackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{12pt plus 2pt minus 2pt}{4pt plus 2pt minus 2pt}
+\titlespacing*{\subsection}{0pt}{8pt plus 2pt minus 2pt}{2pt plus 1pt minus 1pt}
+\titlespacing*{\subsubsection}{0pt}{6pt plus 2pt minus 2pt}{2pt plus 1pt minus 1pt}
+
+\def\@maketitle{%
+  \vbox to 0pt{}%
+  \vskip -\headsep
+  \vskip 0.3in
+  \begin{center}%
+    {\LARGE\bfseries \@title \par}%
+    \vskip 0.3in
+    \if@neuripsanonymous
+      \textit{Anonymous Author(s)}\\textit{Affiliation}\\textit{Address}\\texttt{email}
+    \else
+      {\large \@author}%
+    \fi
+    \vskip 0.3in
+  \end{center}%
+}
+
+\renewenvironment{abstract}{%
+  \centerline{\large\bfseries Abstract}%
+  \vspace{0.5ex}%
+  \begin{quote}%
+}{\end{quote}}
+
+\newenvironment{ack}{%
+  \if@neuripsanonymous\setbox0\vbox\bgroup\else\section*{Acknowledgments}\fi
+}{\if@neuripsanonymous\egroup\fi}
+
+\pagestyle{plain}
+
+\if@neuripspreprint
+  \RequirePackage{fancyhdr}
+  \pagestyle{fancy}\fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \fancyhead[C]{\small Preprint. Work in progress.}
+  \renewcommand{\headrulewidth}{0pt}
+\fi
+
+\endinput
