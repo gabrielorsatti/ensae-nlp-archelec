@@ -94,8 +94,6 @@ ensae-nlp-archelec/
 
 ---
 
----
-
 ## How to reproduce
 
 1. Clone this repository
