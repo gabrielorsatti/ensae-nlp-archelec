@@ -18,7 +18,7 @@
 \usepackage{float}
 \usepackage{caption}
 
-\title{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973-1993}
+\title{The Language of Electoral Competition:\\Thematic Structure and Ideological Framing\\in French Legislative Manifestos, 1973--1993}
 
 \author{
   Gabriel Orsatti\thanks{Course: Machine Learning for Natural Language Processing.} \\
@@ -33,7 +33,7 @@
 \maketitle
 
 \begin{abstract}
-This paper applies natural language processing techniques to a corpus of 21,697 French electoral manifestos (\textit{professions de foi}) spanning five legislative elections between 1973 and 1993. We combine unsupervised LDA topic modeling, supervised text classification (logistic regression on TF-IDF features), and log-odds rhetorical analysis to answer two fundamental questions: what underlying thematic structure organises political discourse, and how do distinct political families frame identical policy themes? An 11-topic LDA model produces a highly balanced thematic decomposition, capturing dimensions from class struggle and institutional governance to the emerging concerns of ecology and immigration. Furthermore, a logistic regression classifier demonstrates that political family affiliation can be predicted from raw text with remarkable accuracy. Our log-odds analysis provides a deeper explanation for this: families discussing the exact same topic, unemployment, for instance, rely on strikingly different and ideologically charged vocabularies. Finally, by comparing textual discourse to INSEE macroeconomic data, we find compelling evidence that campaign rhetoric is at least partly tethered to material realities rather than purely strategic posturing. The overarching insight of this study is that ideological differentiation in French politics operates primarily at the vocabulary level, rather than the topic level: parties broadly discuss the same issues, but they speak entirely different languages.
+This paper applies natural language processing techniques to a corpus of 21,697 French electoral manifestos (\textit{professions de foi}) spanning five legislative elections between 1973 and 1993. We combine unsupervised LDA topic modeling, supervised text classification (logistic regression on TF-IDF features), and log-odds rhetorical analysis to answer two fundamental questions: what underlying thematic structure organises political discourse, and how do distinct political families frame identical policy themes? An 11-topic LDA model produces a highly balanced thematic decomposition, capturing dimensions from class struggle and institutional governance to the emerging concerns of ecology and immigration. Furthermore, a logistic regression classifier demonstrates that political family affiliation can be predicted from raw text with remarkable accuracy. Our log-odds analysis provides a deeper explanation for this: families discussing the exact same topic, unemployment, for instance, rely on strikingly different and ideologically charged vocabularies. Finally, by comparing textual discourse to INSEE macroeconomic data, we find compelling evidence of shifting political agendas: as structural unemployment worsened, campaign rhetoric retreated from macroeconomics to focus on new societal cleavages. The overarching insight of this study is that ideological differentiation in French politics operates primarily at the vocabulary level, rather than the topic level: parties broadly discuss the same issues, but they speak entirely different languages.
 \end{abstract}
 
 \section{Introduction}
@@ -95,9 +95,9 @@ The evolution of these candidacies (Figure~\ref{fig:evolution}) tells a compelli
 \label{fig:pcs}
 \end{figure}
 
-Furthermore, the PCS-by-family heatmap (Figure~\ref{fig:pcs}) uncovers the distinct sociological recruitment base of each political tradition. The heavy concentration of teachers in the \textit{Gauche modérée} and blue-collar workers in the \textit{Gauche radicale} aligns perfectly with classic French political sociology \citep{gaxie1978cens}. The fact that our zero-shot classifier successfully recovered these well-documented historical patterns provides strong validation for our preprocessing pipeline.
-We also looked at the rate of women candidates across political families over time, and the finding is simple: all parties have fewer than 20\% women candidates in each election, although there is a greater proportion of women on the left and among the Greens.
-Also, the age distribution of the candidates is quite similar between the parties (see notebook).
+Furthermore, the PCS-by-family heatmap (Figure~\ref{fig:pcs}) uncovers the distinct sociological recruitment base of each political tradition. The heavy concentration of teachers in the \textit{Gauche modérée} and blue-collar workers in the \textit{Gauche radicale} aligns perfectly with classic French political sociology \citep{gaxie1978cens}. The fact that our zero-shot classifier successfully recovered these well-documented historical patterns provides strong validation for our preprocessing pipeline. 
+
+Additionally, a demographic analysis reveals a stark gender imbalance: all political families fielded fewer than 20\% women candidates in each election, although the left and the Greens exhibited marginally higher proportions than the right. Conversely, the age distribution of candidates remains remarkably uniform across the political spectrum.
 
 \section{Topic modeling}
 \label{sec:topics}
@@ -120,11 +120,11 @@ When evaluating the optimal number of topics via $C_v$ coherence (Figure~\ref{fi
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{lda_topic_words.png}
-\caption{Top terms for each of the 11 LDA topics. The model successfully captures a rich, multi-dimensional thematic landscape, manually categorised into three broader ideological blocks.}
+\caption{Top terms for each of the 11 LDA topics. The model successfully captures a rich, multi-dimensional thematic landscape, manually categorised into broader ideological blocks.}
 \label{fig:topics}
 \end{figure}
 
-The temporal evolution of topic shares perfectly captures the shifting ideological landscape and the most striking structural change is the sudden explosion of Topic 8 (immigration and national identity) in 1988, which directly tracks the electoral breakthrough of the Front National. Concurrently, the steady institutionalisation of environmental politics is reflected in the gradual expansion of Topic 7 (ecology) in the later elections. Conversely, traditional labor and class-struggle narratives (Topics 0 and 5), which commanded a dominant share during the highly polarized elections of the 1970s, slowly recede over time. Ultimately, this visualizes a clear transition from a political arena dominated by economic class conflict to one increasingly fragmented by new cultural and ecological cleavages.
+The resulting 11 topics (Figure~\ref{fig:topics}) reveal a surprisingly rich thematic landscape, naturally clustering into broader ideological blocks. The \textbf{Labor and Class Struggle block} (Topics 0, 5, 9) separates different registers of economic conflict, from workplace dynamics to militant Marxist vocabulary and the 1981 Mitterrandist mobilization. The \textbf{Institutional and Governance block} (Topics 1, 2, 4) captures the meta-discourse of the Republic, isolating the mainstream right coalition (Topic 1), localized institutional appeals (Topic 2), and broad second-round mobilization (Topic 4). \textbf{Electoral Alliances} (Topic 3) explicitly reflects the left-wing ``Common Program''. The \textbf{Ecology block} (Topics 7, 10) traces the evolution from 1970s anti-nuclear protest to institutionalized Green politics. Finally, \textbf{``Out-of-System'' Niche Themes} (Topic 8) is algorithmically fascinating: it isolates the emergence of the Front National alongside radical animal rights rhetoric, grouped together due to their shared statistical rupture with standard governmental vocabulary. Topic 6 provides the programmatic backbone of social protection.
 
 \subsection{Temporal dynamics}
 
@@ -135,7 +135,7 @@ The temporal evolution of topic shares perfectly captures the shifting ideologic
 \label{fig:temporal}
 \end{figure}
 
-When plotted over time (Figure~\ref{fig:temporal}), the topic shares capture genuine, macro-level political shifts. The sudden surge of the immigration topic perfectly mirrors the Front National's electoral breakthrough in the 1980s. Conversely, the steady decline of the class-struggle topics reflects the broader retreat of Marxist vocabulary from mainstream French political discourse.
+When plotted over time (Figure~\ref{fig:temporal}), the topic shares perfectly capture the shifting ideological landscape of the French Fifth Republic. The most striking structural change is the sudden explosion of Topic 8 (immigration) in 1978 and especially in 1988, which directly tracks the electoral breakthrough of the Front National. Concurrently, the steady institutionalisation of environmental politics is reflected in the gradual expansion of Topic 7 (ecology) in the later elections. Conversely, traditional labor and class-struggle narratives (Topics 0 and 5), which commanded a dominant share during the highly polarized elections of the 1970s, slowly recede over time. Ultimately, this visualizes a clear transition from a political arena dominated by economic class conflict to one increasingly fragmented by new cultural and ecological cleavages.
 
 \subsection{Topic specialisation and proximity}
 
@@ -156,7 +156,7 @@ When plotted over time (Figure~\ref{fig:temporal}), the topic shares capture gen
 \end{minipage}
 \end{figure}
 
-Figure~\ref{fig:specialisation} quantifies how different factions lean into specific themes. Unsurprisingly, niche families like the \textit{Gauche radicale} or the \textit{Extrême droite} show intense over-representation in their signature topics. Mainstream governmental parties (\textit{Droite}, \textit{Centre}) exhibit much flatter, catch-all profiles. 
+Figure~\ref{fig:specialisation} quantifies how different factions lean into specific themes. Unsurprisingly, niche families like the \textit{Gauche radicale} or the \textit{Extrême droite} show intense over-representation in their signature topics. "Mainstream governmental parties "(\textit{Droite}, \textit{Centre}) exhibit much flatter, catch-all profiles. 
 
 However, the most revealing insight comes from the cross-family similarity matrix (Figure~\ref{fig:cosine}). At the macroscopic level of topic distribution, all political families display a cosine similarity incredibly close to 1.0. In other words, every political family feels compelled to address the exact same set of broad themes. The differentiation between them does not happen in \textit{what} they discuss, but critically, in \textit{how} they discuss it.
 
@@ -214,7 +214,9 @@ Let us look specifically at documents highly loaded on the ``Employment'' topic 
 \label{fig:macro}
 \end{figure}
 
-A recurring debate in political science is whether campaign discourse is purely strategic or responsive to actual events. Figure~\ref{fig:macro} overlays objective INSEE macroeconomic data with the frequency of economic terms in our corpus but the correlation appears weak. Economic vocabulary dominates in 1978 and 1981, perfectly mirroring the severe stagflation crisis (where inflation peaked at 13.4\%). As inflation recedes by 1988, so does the economic rhetoric. It rebounds in 1993, but this time pivoting to address the soaring unemployment rate (11.6\%). This strongly suggests that politicians, regardless of their family, are forced to tether their rhetoric to the material conditions experienced by the voters.
+A recurring debate in political science is whether campaign discourse is purely strategic or responsive to actual events. Figure~\ref{fig:macro} overlays objective INSEE macroeconomic data with the frequency of economic terms in our corpus. To test whether aggregate discourse tracks these indicators, we computed Pearson correlations over the election years. While the high inflation of 1978 and 1981 generated substantial economic debate regarding purchasing power ($r = 0.451$, non-significant), the relationship with unemployment is profoundly different. 
+
+Strikingly, we find a strong \textit{negative} correlation between unemployment and general economic discourse ($r = -0.866$). As structural unemployment worsened throughout the 1980s and early 1990s (crossing 11\% by 1993), the overall frequency of generic economic vocabulary actually \textit{decreased} across the corpus. This counter-intuitive finding suggests a profound shift in political framing: as mass unemployment became an intractable reality, mainstream parties retreated from grand macroeconomic narratives. Instead, the political debate fragmented and pivoted toward new societal cleavages, notably immigration and ecology.
 
 \section{Semantic geometry}
 
@@ -231,11 +233,11 @@ As a final visual synthesis, the t-SNE projection (Figure~\ref{fig:tsne}) maps t
 
 Three major findings emerge from this study. First, the synergy between unsupervised and supervised methods is paramount. Topic modeling alone would have led us to believe that all parties are essentially similar, as they share the same overarching themes. It is only through classification and lexical log-odds analysis that we uncover the true mechanism of differentiation: vocabulary. 
 
-Second, the classifier's performance confirms a core tenet of political science regarding niche versus catch-all parties \citep{meguid2005competition}. Niche parties (Greens, Far-Right) cultivate highly distinctive, insular discursive identities to survive, making them mathematically easy to identify. "Mainstream parties deliberately blur their ideological contours to appeal to the median voter, confusing both human readers and our logistic regression.
+Second, the classifier's performance confirms a core tenet of political science regarding niche versus catch-all parties \citep{meguid2005competition}. Niche parties (Greens, Far-Right) cultivate highly distinctive, insular discursive identities to survive, making them mathematically easy to identify. Mainstream parties deliberately blur their ideological contours to appeal to the median voter, confusing both human readers and our logistic regression.
 
 Third, the ability of raw, noisy OCR text to cleanly map onto external historical and macroeconomic events validates the robustness of NLP in the social sciences. The rise of immigration discourse or the shifting focus from inflation to unemployment are not artifacts of the algorithm; they are the digital echoes of French history.
 
-\textbf{Limitations.} The study is not without flaws. OCR quality is highly variable, heavily penalizing older documents from the 1970s. Additionally, our LDA model relies on hard assignments ($\arg\max$), which discards the softer, nuanced probabilities of document membership. Finally, the correlation between discourse and macroeconomic reality is not causation and remains quite weak, requiring deeper causal inference methods to truly validate.
+\textbf{Limitations.} The study is not without flaws. OCR quality is highly variable, heavily penalizing older documents from the 1970s. Additionally, our LDA model relies on hard assignments ($\arg\max$), which discards the softer, nuanced probabilities of document membership. Finally, the correlation between discourse and macroeconomic reality remains an ``ecological correlation''; while the aggregate negative correlation with unemployment is statistically strong, it requires deeper causal inference methods to truly validate at the individual candidate level.
 
 \section{Conclusion}
 
@@ -366,7 +368,7 @@ For each unique profession string $p$, the XLM-RoBERTa model evaluates the entai
 \section{Model comparison and BERTopic}
 \label{app:models}
 
-During our initial exploration, we compared LDA ($k{=}11$, $C_v{=}0.49$, max topic share 23.6\%) with NMF ($k{=}5$, $C_v{=}0.71$, max topic share 84.5\%). Relying purely on the higher coherence score of NMF would have been deeply misleading: the model is essentially degenerate, dumping nearly all documents into one vague background topic. NMF excels at isolating hyper-specific micro-clusters (e.g., animal welfare candidates, ultra-local concerns) but fails to provide a usable general decomposition of the corpus.
+During our initial exploration, we compared LDA ($k{=}11$, $C_v{=}0.49$, max topic share 23.6\%) with NMF ($k{=}5$, $C_v{=}0.71$, max topic share 84.5\%). Relying purely on the higher coherence score of NMF would have been deeply misleading: the model is essentially degenerate, dumping nearly all documents into one vague background topic. NMF excels at isolating hyper-specific micro-clusters—for instance, dedicating an entire mathematical cluster to specific local grievances like animal protection in Marseille—but fails to provide a usable general decomposition of the corpus.
 
 We also conducted preliminary experiments with BERTopic (utilizing Sentence-Transformers, UMAP, and HDBSCAN). While it generated semantically coherent clusters, the topics proved far less stable across different random seeds. More importantly, the dense-embedding framework makes the extraction of specific coefficients and log-odds computations highly impractical. Ultimately, LDA's raw interpretability, the ability to transparently read word lists, inspect $\theta$ vectors, and explicitly compute specialisation ratios, was the decisive factor for answering our specific research questions.
 
